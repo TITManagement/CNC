@@ -1,0 +1,8 @@
+# Core dependencies for CNC XY Runner
+pyyaml>=6.0
+matplotlib>=3.7.0
+pyserial>=3.5
+svgpathtools>=1.7.0
+
+# Development dependencies (optional)
+# Install with: pip install -r requirements.txt -r requirements-dev.txt

@@ -1,132 +1,208 @@
-# XY Runner (中央精機 + SVG対応)
+# CNC XY Runner
 
-PowerPointで描いた図形をSVGとして保存し、そのパスを中央精機XYコントローラで描画・動作させるためのPythonスクリプトです。シミュレーション表示も可能です。
+<div align="center">
 
-## 特徴
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-- **PowerPoint → SVG → CNC加工**: PowerPointで作成した図形を直接CNC加工
-- **シミュレーション表示**: matplotlib による軌跡のリアルタイム表示
-- **対話的操作**: 設定ファイルやSVGファイルをGUIで選択可能
-- **柔軟な設定**: YAML設定ファイルで細かなパラメータ調整
+**PowerPoint to CNC: Professional SVG path-based XY controller for manufacturing automation**
 
-## クイックスタート
+[Features](#features) •
+[Installation](#installation) •
+[Quick Start](#quick-start) •
+[Documentation](#documentation) •
+[Contributing](#contributing)
 
-### 1. 依存ライブラリのインストール
+</div>
+
+## Overview
+
+CNC XY Runner bridges the gap between design and manufacturing by converting PowerPoint presentations directly into CNC machine instructions. This system processes SVG exports through sophisticated path analysis and generates precise motion control commands for XY positioning systems.
+
+### Key Capabilities
+
+🎯 **Design to Manufacturing Pipeline**
+- PowerPoint → SVG → CNC workflow
+- Interactive file selection with GUI
+- Real-time simulation and preview
+
+🔧 **Hardware Integration**
+- Chuo Seiki XY stage control
+- Serial communication interface
+- Extensible driver architecture
+
+📊 **Visualization & Safety**
+- matplotlib-based real-time simulation
+- Motion path preview and validation
+- Configurable safety limits and parameters
+
+## Features
+
+- ✅ **PowerPoint Integration**: Direct SVG export processing
+- ✅ **Interactive GUI**: File selection dialogs for ease of use
+- ✅ **Real-time Simulation**: matplotlib animation with motion preview
+- ✅ **Hardware Control**: Chuo Seiki machine integration via PySerial
+- ✅ **Flexible Configuration**: YAML-based job definitions
+- ✅ **Pattern Generation**: Built-in grid and geometric patterns
+- ✅ **Safety Systems**: Configurable limits and motion validation
+- ✅ **Extensible Architecture**: Plugin-based driver system
+
+## Installation
+
+### Quick Setup (Recommended)
 
 ```bash
+git clone https://github.com/TITManagement/CNC.git
+cd CNC
+./scripts/setup.sh
+```
+
+### Manual Installation
+
+```bash
+# Clone repository
+git clone https://github.com/TITManagement/CNC.git
+cd CNC
+
+# Create virtual environment
 python3 -m venv .venv
-source .venv/bin/activate
-pip install pyyaml matplotlib pyserial svgpathtools
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install in development mode
+pip install -e .
 ```
 
-### 2. 実行
+### Development Setup
 
 ```bash
-# 設定ファイルを選択して実行
-python xy_runner.py
-
-# または、直接指定
-python xy_runner.py --config job_svg.yaml
+./scripts/setup.sh --dev
 ```
 
-## ファイル構成
+This installs additional development tools (pytest, black, mypy, etc.)
 
-- **`xy_runner.py`** : メインスクリプト
-- **`job_svg.yaml`** : SVG描画用設定（シミュレーション）
-- **`job_svg_chuo.yaml`** : 中央精機実機用設定
-- **`job.yaml`** : グリッド円パターンのサンプル設定
-- **`drawing.svg`** : テスト用SVGサンプル
+## Quick Start
 
-## 使い方
+### 1. PowerPoint to SVG
+1. Create your design in PowerPoint using **shapes** (not text)
+2. Export as SVG: `File → Export → Change File Type → SVG`
+3. Select "Current Slide"
 
-### 1. PowerPoint → SVG
-1. PowerPointで図形を描く（**図形ツール**を使用、テキストは不可）
-2. 図形を選択して **右クリック → 図として保存 → SVG形式** で保存
-3. 設定ファイルで `file:` を空にするか、実行時にファイル選択ダイアログから選択
-
-### 2. シミュレーション表示
+### 2. Run Simulation
 ```bash
-python xy_runner.py --config job_svg.yaml
-```
-- matplotlibウィンドウに軌跡が表示されます
-- `visual.animate: true` にすると経路をアニメーション表示
-- `visual.fps: 75` で描画速度を調整可能
+# Using Python module
+python src/xy_runner.py examples/job_svg.yaml
 
-### 3. 中央精機実機制御
-```bash
-python xy_runner.py --config job_svg_chuo.yaml
+# Or using installed command
+cnc-xy-runner examples/job_svg.yaml
 ```
 
-### 4. グリッド円パターンのサンプル実行
-```bash
-python xy_runner.py --config job.yaml
+### 3. Select Your SVG
+- A file dialog will appear
+- Select your exported SVG file
+- Watch the real-time simulation
+
+## Project Structure
+
 ```
-- グリッド状に円を描くサンプル
-- 設定は`job.yaml`で調整可能（セルサイズや円径など）
-
-## 設定パラメータ
-
-### `job_svg_chuo.yaml` の主なパラメータ
-- `port` : 接続するシリアルポート (例: `COM3`, `/dev/ttyUSB0`)
-- `baud` : ボーレート (通常 9600)
-- `mm_per_pulse` : 1パルスあたりの移動量 [mm] (例: 2000 pulse/mm の場合は `0.0005`)
-- `jobs[0].file` : PowerPointから保存したSVGファイル（空の場合はファイル選択ダイアログ）
-- `origin` : 機械座標系での配置オフセット [mm]
-- `px_to_mm` : px→mm 換算係数。96dpi前提なら `0.264583`
-- `chord_mm` : 曲線サンプリング間隔 [mm] (小さいほど滑らか)
-- `y_flip` : 機械座標とSVGのY方向が逆なら `true`
-- `feed` : 送り速度 [mm/min]
-
-## 精度調整の流れ
-1. まず `job_svg.yaml` でシミュレーション確認
-2. 実機で小さい図形を描き、定規で寸法を実測
-3. `px_to_mm` を微調整 (例: 0.263〜0.266 など)
-4. 曲線がカクカクする場合は `chord_mm` を小さくする (例: 0.2)
-
-## SVGファイルについて
-
-### 対応する図形
-- **対応**: `<path>`, `<circle>`, `<rect>`, `<line>`, `<polygon>` などの図形要素
-- **非対応**: `<text>` (テキスト要素はパス情報に変換されません)
-
-### PowerPointでの作成ポイント
-- **図形ツール**で描画する（円、四角、線、フリーハンドなど）
-- テキストではなく、**線画**として作成
-- 複数図形のグループ化も可能
-
-### テスト用SVGサンプル
-```xml
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">
-  <circle cx="50" cy="50" r="30" fill="none" stroke="black" stroke-width="2"/>
-  <rect x="120" y="120" width="60" height="60" fill="none" stroke="black" stroke-width="2"/>
-</svg>
+CNC/
+├── src/                    # Source code
+│   └── xy_runner.py        # Main application
+├── examples/               # Configurations & samples
+│   ├── job_svg.yaml        # SVG processing config
+│   ├── job_svg_chuo.yaml   # Hardware config
+│   ├── job.yaml            # Grid pattern config
+│   └── drawing.svg         # Sample SVG file
+├── docs/                   # Documentation
+│   ├── user-guide.md       # User documentation
+│   └── developer-guide.md  # Development guide
+├── scripts/                # Utility scripts
+│   └── setup.sh            # Environment setup
+├── requirements.txt        # Dependencies
+├── pyproject.toml          # Package configuration
+└── README.md               # This file
 ```
 
-## システム要件
+## Configuration
 
-- **Python**: 3.8〜3.13
-- **依存ライブラリ**:
-  - pyyaml 6.0以上
-  - matplotlib 3.7以上
-  - pyserial 3.5以上
-  - svgpathtools 1.7以上
+The system uses YAML configuration files to define jobs:
 
-## 注意点
+```yaml
+# examples/job_svg.yaml
+driver: sim                 # 'sim' for simulation, 'chuo' for hardware
+svg_file: select            # 'select' for GUI file picker
 
-- 本スクリプトはあくまで簡易Gコードラッパです
-- 複雑な加工用パスや高精度CAD用途にはInkscape + 専用CAMツールを推奨
-- SVGは **線のパス** のみ対象です。塗りつぶし(Fill)は無視されます
-- 中央精機コントローラに依存する実装のため、パルス単位の調整は必ず実機仕様を確認してください
+motion_params:
+  rapid_speed: 1000         # Fast movement speed (mm/min)
+  cut_speed: 100            # Drawing speed (mm/min)
+  lift_height: 5            # Z-axis lift for rapid moves
 
-## トラブルシューティング
+visualization:
+  animate: true             # Enable real-time animation
+  title: "CNC XY Simulation"
+```
 
-### "No tracks" エラーが出る場合
-- SVGファイルにパス情報（`<path>`, `<circle>` など）が含まれているか確認
-- PowerPointでテキストではなく図形ツールを使用しているか確認
+## Hardware Support
 
-### matplotlibの警告について
-- matplotlibのバージョンによってはアニメーション表示時に警告が出る場合がありますが、動作には問題ありません
+### Chuo Seiki Integration
+- Serial communication via PySerial
+- Configurable COM port and baud rate
+- Real-time position feedback
+- Safety limit enforcement
 
-## ライセンス
+### Simulation Mode
+- No hardware required
+- matplotlib-based visualization
+- Motion path preview
+- Animation controls
 
-MIT
+## Documentation
+
+- 📖 [User Guide](docs/user-guide.md) - Complete usage instructions
+- 🔧 [Developer Guide](docs/developer-guide.md) - Development and customization
+- 📚 [Full Documentation](docs/index.md) - Comprehensive documentation index
+
+## Contributing
+
+We welcome contributions! Please see our [Developer Guide](docs/developer-guide.md) for details.
+
+### Development Workflow
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with tests
+4. Run quality checks: `black src/ && mypy src/`
+5. Submit a pull request
+
+## Use Cases
+
+- **Prototyping**: Rapid conversion of designs to physical movement
+- **Education**: Teaching CNC concepts with visual feedback
+- **Research**: Automated pattern generation for experiments
+- **Manufacturing**: Production toolpath generation from presentations
+
+## Technical Details
+
+- **Python 3.8+** compatibility
+- **Dependencies**: PyYAML, matplotlib, PySerial, svgpathtools
+- **Architecture**: Modular driver system for extensibility
+- **Testing**: pytest-based test suite
+- **Code Quality**: Black formatting, mypy type checking
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📧 **Email**: info@titmanagement.com
+- 🐛 **Issues**: [GitHub Issues](https://github.com/TITManagement/CNC/issues)
+- 📖 **Documentation**: [Full Documentation](docs/index.md)
+
+---
+
+<div align="center">
+<strong>Transform your PowerPoint designs into precise CNC motion with professional-grade control and visualization.</strong>
+</div>
