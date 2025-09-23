@@ -1,0 +1,24 @@
+driver: sim          # sim / chuo
+port: COM3           # 実機時のみ使用
+baud: 9600
+mm_per_pulse: 0.0005 # 実機時のみ: 1パルスあたりのmm
+
+visual:
+  show: true
+  animate: true
+  title: "Grid in-circle demo"
+
+defaults:
+  unit: mm
+  mode: absolute
+  feed: 1200
+
+jobs:
+  - type: grid_circles
+    origin: [0, 0]
+    area: [100, 100]
+    cell: 20
+    circle_d: 20
+    cw: false
+    dwell_ms: 0
+    snake: true
