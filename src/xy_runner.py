@@ -106,7 +106,7 @@ class SimDriver:
         ny=self._cy if y is None else float(y)
         self.tracks.append((self._cx,self._cy,nx,ny,rapid,feed))
         self._cx,self._cy=nx,ny
-    def show(self,animate=False,fps=75,title="XY Simulation"):
+    def animate_tracks(self, animate=False, fps=360, title="XY Simulation"):
         import matplotlib.pyplot as plt
         import matplotlib.animation as animation
         if not self.tracks: print("No tracks"); return
@@ -275,17 +275,21 @@ def select_svg_file():
 
 def select_config_interactive():
     import glob
+    # カレントディレクトリとexamples/ディレクトリのyamlファイルを取得
     yaml_files = [f for f in glob.glob("*.yaml") if f.endswith(".yaml")]
-    if not yaml_files:
+    examples_yaml = [f for f in glob.glob("examples/*.yaml") if f.endswith(".yaml")]
+    all_yaml = yaml_files + examples_yaml
+    if not all_yaml:
         print("YAML設定ファイルが見つかりません。")
         sys.exit(1)
     print("設定ファイルを選択してください:")
-    for idx, fname in enumerate(yaml_files, 1):
+    for idx, fname in enumerate(all_yaml, 1):
         print(f"  {idx}: {fname}")
     while True:
         sel = input("番号を入力してください: ").strip()
-        if sel.isdigit() and 1 <= int(sel) <= len(yaml_files):
-            return yaml_files[int(sel)-1]
+        if sel.isdigit() and 1 <= int(sel) <= len(all_yaml):
+            print(f"選択された設定: {all_yaml[int(sel)-1]}")
+            return all_yaml[int(sel)-1]
         print("正しい番号を入力してください。")
 
 # ========= メイン =========
@@ -297,9 +301,15 @@ def main():
     ap.add_argument("--no-animate", action="store_true")
     args = ap.parse_args()
 
-    # config未指定時は対話選択
+    # config未指定時はusage例を表示し、対話選択
     config_path = args.config
     if not config_path:
+        print("\n[Usage :]")
+        print("  python src/xy_runner.py --config <設定ファイル.yaml>")
+        print("  python src/xy_runner.py --config examples/job_svg.yaml")
+        print("  python src/xy_runner.py --driver sim --show")
+        print("  python src/xy_runner.py --help")
+        print("")
         config_path = select_config_interactive()
         print(f"選択された設定: {config_path}")
 
@@ -344,8 +354,8 @@ def main():
         elif typ=="svg":
             # SVG job params
             file_path = job.get("file")
-            if not file_path:
-                # ファイルパスが指定されていない場合、GUIで選択
+            # fileが未指定・空文字列・Noneなら必ず対話選択
+            if not file_path or str(file_path).strip() == "":
                 print("SVGファイルが指定されていません。ファイルを選択してください...")
                 file_path = select_svg_file()
                 if not file_path:
@@ -379,7 +389,7 @@ def main():
     if driver_name=="sim" and show_flag:
         title = vis.get("title","XY Simulation")
         animate = not args.no_animate and bool(vis.get("animate", True))
-        drv.show(animate=animate, title=title)
+        drv.animate_tracks(animate=animate, title=title)
     else:
         if hasattr(drv,"close"): drv.close()
 
