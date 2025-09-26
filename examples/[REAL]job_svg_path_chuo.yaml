@@ -1,0 +1,22 @@
+driver: chuo
+visual:
+  show: true
+  animate: false
+  title: "実機描画"
+  fps: 75
+
+defaults:
+  unit: mm
+  mode: absolute
+  feed: 1200
+
+jobs:
+  - type: svg
+    file:
+    origin: [0, 0]
+    px_to_mm: 0.264583
+    chord_mm: 0.5
+    feed: 800
+    y_flip: true
+    svg_height_mm: 297
+    sort_paths: true

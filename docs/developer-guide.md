@@ -1,148 +1,143 @@
-# Developer Guide
+# 開発者ガイド
 
-## Project Structure
+## プロジェクト構成
 
 ```
 CNC/
-├── src/              # Source code
-│   └── xy_runner.py  # Main application
-├── examples/         # Configuration and sample files
-│   ├── job*.yaml     # Job configurations
-│   └── *.svg         # Sample SVG files
-├── docs/             # Documentation
-├── scripts/          # Setup and utility scripts
-├── requirements.txt  # Python dependencies
-└── pyproject.toml    # Package configuration
+├── src/              # ソースコード
+│   └── xy_runner.py  # メインアプリ
+├── examples/         # 設定・サンプル
+│   ├── job*.yaml     # ジョブ設定
+│   └── *.svg         # SVGサンプル
+├── docs/             # ドキュメント
+├── scripts/          # セットアップ・ユーティリティ
+├── requirements.txt  # Python依存
+└── pyproject.toml    # パッケージ設定
 ```
 
-## Code Architecture
+## コードアーキテクチャ
 
-### Core Classes
+### 主要クラス
 
 #### GCodeWrapper
-Manages G-code generation and command processing:
+Gコード生成・コマンド処理を管理:
 ```python
 class GCodeWrapper:
     def __init__(self, config):
-        # Initialize with YAML configuration
-        
+        # YAML設定で初期化
     def run_job(self):
-        # Main execution loop
-        
+        # メイン実行ループ
     def process_svg_file(self, svg_path):
-        # Convert SVG to motion commands
+        # SVG→動作コマンド変換
 ```
 
 #### SimDriver
-Matplotlib-based simulation:
+matplotlibによるシミュレーション:
 ```python
 class SimDriver:
-    def show(self, tracks):
-        # Animate CNC movements
-        # Real-time visualization
-        # Track display with colors
+    def animate_tracks(self, tracks):
+        # CNC動作のアニメーション
+        # リアルタイム可視化
+        # 軌跡表示
 ```
 
 #### ChuoDriver
-Hardware interface for Chuo Seiki machines:
+中央精機用ハードウェアインターフェース:
 ```python
 class ChuoDriver:
     def __init__(self, com_port):
-        # Serial communication setup
-        
+        # シリアル通信初期化
     def move_to(self, x, y):
-        # Send movement commands
+        # 移動コマンド送信
 ```
 
-## Development Setup
+## 開発環境セットアップ
 
-1. **Clone and setup**:
+1. **クローン＆セットアップ**:
    ```bash
    git clone https://github.com/TITManagement/CNC.git
    cd CNC
    ./scripts/setup.sh --dev
    ```
 
-2. **Install pre-commit hooks**:
+2. **pre-commitフックのインストール**:
    ```bash
    pre-commit install
    ```
 
-## Code Style
+## コードスタイル
 
-We use Black for code formatting:
+Blackで整形:
 ```bash
 black src/ --line-length 100
 ```
 
-Type checking with mypy:
+mypyで型チェック:
 ```bash
 mypy src/
 ```
 
-## Testing
+## テスト
 
-Run tests with pytest:
+pytestでテスト実行:
 ```bash
 pytest tests/
 ```
 
-## Adding New Hardware Drivers
+## 新しいハードウェアドライバ追加
 
-1. **Create driver class**:
+1. **ドライバクラス作成**:
    ```python
    class NewDriver:
        def __init__(self, config):
            pass
-           
        def move_to(self, x, y):
-           # Implement hardware-specific movement
+           # ハードウェア固有の動作
            pass
-           
        def set_speed(self, speed):
-           # Set movement speed
+           # 速度設定
            pass
    ```
 
-2. **Register in main**:
+2. **mainで登録**:
    ```python
    driver_map = {
        'sim': SimDriver,
        'chuo': ChuoDriver,
-       'new': NewDriver,  # Add here
+       'new': NewDriver,  # 追加
    }
    ```
 
-## Configuration System
+## 設定システム
 
-YAML configurations support:
-- Motion parameters
-- Hardware settings
-- Safety limits
-- Debug options
+YAML設定で以下をサポート:
+- モーションパラメータ
+- ハードウェア設定
+- 安全リミット
+- デバッグオプション
 
-Example structure:
+例:
 ```yaml
-# Hardware driver selection
-driver: sim  # or 'chuo', 'new'
+# ハードウェアドライバ選択
+driver: sim  # または 'chuo', 'new'
 
-# Motion control
+# モーション制御
 motion_params:
   rapid_speed: 1000
   cut_speed: 100
 
-# Input source
+# 入力ソース
 svg_file: examples/drawing.svg
-# or
+# または
 pattern:
   type: grid_circles
   rows: 3
   cols: 3
 ```
 
-## SVG Processing
+## SVG処理
 
-The system uses `svgpathtools` for path extraction:
+`svgpathtools`でパス抽出:
 
 ```python
 from svgpathtools import svg2paths
@@ -150,36 +145,32 @@ from svgpathtools import svg2paths
 def process_svg_file(self, svg_path):
     paths, attributes = svg2paths(svg_path)
     for path in paths:
-        # Convert path to coordinate points
+        # パス→座標変換
         points = self.path_to_points(path)
-        # Generate movement commands
+        # 動作コマンド生成
         self.add_track(points)
 ```
 
-## Debugging
+## デバッグ
 
-Enable debug mode in configuration:
+設定でデバッグモード有効化:
 ```yaml
 debug: true
 ```
 
-This provides:
-- Detailed parsing output
-- Command generation logs
-- Serial communication traces
-- Animation frame details
+詳細な解析・コマンド生成・通信・アニメーション情報が表示されます。
 
-## Contributing
+## コントリビュート
 
-1. Fork the repository
-2. Create feature branch
-3. Make changes with tests
-4. Run code quality checks
-5. Submit pull request
+1. リポジトリをフォーク
+2. フィーチャーブランチ作成
+3. テスト付きで修正
+4. コード品質チェック
+5. プルリクエスト提出
 
-### Code Quality Checklist
-- [ ] Black formatting applied
-- [ ] Type hints added
-- [ ] Tests written
-- [ ] Documentation updated
-- [ ] No lint errors
+### コード品質チェックリスト
+- [ ] Black整形済み
+- [ ] 型ヒント追加
+- [ ] テスト作成
+- [ ] ドキュメント更新
+- [ ] Lintエラーなし

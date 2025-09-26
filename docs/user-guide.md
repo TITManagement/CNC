@@ -1,68 +1,68 @@
-# User Guide
+# ユーザーガイド
 
-## Installation
+## インストール
 
-### Quick Setup
-Use the automated setup script:
+### クイックセットアップ
+自動セットアップスクリプトを使います:
 ```bash
 ./scripts/setup.sh
 ```
 
-### Manual Setup
-1. Create virtual environment:
+### 手動セットアップ
+1. 仮想環境の作成:
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
    ```
 
-2. Install dependencies:
+2. 依存ライブラリのインストール:
    ```bash
    pip install -r requirements.txt
    ```
 
-## Basic Usage
+## 基本的な使い方
 
-### Running SVG Jobs
-1. Export your PowerPoint slide as SVG
-2. Run with configuration:
+### SVGジョブの実行
+1. SVGを準備する。PowerPointスライドからも作成可能
+2. 設定ファイルで実行:
    ```bash
    python src/xy_runner.py examples/job_svg.yaml
    ```
 
-### Configuration Files
-- `job_svg.yaml` - SVG file processing with file selection dialog
-- `job_svg_chuo.yaml` - Real hardware configuration
-- `job.yaml` - Grid pattern generation
+### 設定ファイル
+- `job_svg.yaml` - SVGファイル選択ダイアログ付きの設定
+- `job_svg_chuo.yaml` - 実機制御用設定
+- `job.yaml` - グリッドパターン生成
 
-## PowerPoint to SVG Workflow
+## PowerPoint → SVG ワークフロー
 
-1. **Create PowerPoint Slide**
-   - Use shapes, not text
-   - Keep designs simple
-   - Use high contrast colors
+1. **PowerPointでスライド作成**
+   - 図形ツールのみ使用（テキスト不可）
+   - シンプルなデザイン推奨
+   - コントラストの高い色を使う
 
-2. **Export as SVG**
-   - File → Export → Change File Type → SVG
-   - Choose "Current Slide"
+2. **SVGとしてエクスポート**
+   - ファイル → エクスポート → ファイル形式変更 → SVG
+   - 「現在のスライド」を選択
 
-3. **Process with CNC XY Runner**
-   - Use SVG configuration file
-   - Select exported SVG when prompted
+3. **CNC XY Runnerで処理**
+   - SVG設定ファイルを使う
+   - 実行時にSVGファイルを選択
 
-## Motion Parameters
+## モーションパラメータ
 
-Adjust these settings in your YAML configuration:
+YAML設定で以下を調整できます:
 
 ```yaml
 motion_params:
-  rapid_speed: 1000    # Fast movement speed
-  cut_speed: 100       # Cutting/drawing speed
-  lift_height: 5       # Z-axis lift for rapid moves
+  rapid_speed: 1000    # 高速移動速度
+  cut_speed: 100       # 描画速度
+  lift_height: 5       # Z軸リフト高さ
 ```
 
-## Safety Settings
+## 安全設定
 
-Configure limits to protect your machine:
+機械保護のためのリミット設定:
 
 ```yaml
 safety:
@@ -72,31 +72,31 @@ safety:
   enable_limits: true
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-### Common Issues
+### よくある問題
 
-1. **"No tracks" error**
-   - Ensure SVG contains path elements, not text
-   - Re-export from PowerPoint with shapes only
+1. **「No tracks」エラー**
+   - SVGにパス要素が含まれているか確認
+   - PowerPointで図形のみを使い再エクスポート
 
-2. **File selection dialog doesn't appear**
-   - Check that tkinter is installed
-   - Verify desktop environment supports GUI
+2. **ファイル選択ダイアログが表示されない**
+   - tkinterがインストールされているか確認
+   - デスクトップ環境がGUI対応か確認
 
-3. **Serial communication fails**
-   - Check COM port settings
-   - Verify hardware connections
-   - Test with simulation mode first
+3. **シリアル通信が失敗する**
+   - COMポート設定を確認
+   - ハードウェア接続を確認
+   - まずはシミュレーションモードでテスト
 
-### Debug Mode
+### デバッグモード
 
-Enable debug output:
+デバッグ出力を有効化:
 ```yaml
 debug: true
 ```
 
-This will show:
-- Parsed SVG elements
-- Generated motion commands
-- Serial communication details
+表示される内容:
+- SVG要素の解析結果
+- 生成された動作コマンド
+- シリアル通信の詳細

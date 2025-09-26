@@ -1,51 +1,36 @@
-# CNC XY Runner Documentation
+# CNC XY Runner ドキュメント
 
-Welcome to the CNC XY Runner documentation. This system enables seamless conversion from PowerPoint presentations to CNC machine instructions via SVG path processing.
+このプロジェクトは、中央精機 XY ステージやシミュレーション環境で SVG パスやパターンを CNC 動作として実行する Python アプリケーションです。
 
-## Table of Contents
+## ドキュメント一覧
 
-- [User Guide](user-guide.md) - How to use the CNC XY Runner
-- [Developer Guide](developer-guide.md) - Development and customization
-- [API Reference](api-reference.md) - Code documentation
-- [Configuration](configuration.md) - YAML configuration details
-- [Troubleshooting](troubleshooting.md) - Common issues and solutions
+- [ユーザーガイド](user-guide.md)
+  - セットアップ、使い方、設定例
+- [開発者ガイド](developer-guide.md)
+  - コード構成、拡張方法、テスト
+- [README.md](../README.md)
+  - プロジェクト概要、日本語説明
 
-## Quick Start
+## 主な機能
 
-1. **Install**: Use the setup script `./scripts/setup.sh`
-2. **Configure**: Edit YAML files in `examples/`
-3. **Run**: Execute with `python src/xy_runner.py examples/job_svg.yaml`
+- SVGファイルやパターンからCNC動作を生成
+- シミュレーション（matplotlib）と実機制御（中央精機）
+- YAMLによる柔軟な設定
+- コマンドラインから簡単操作
+- 拡張可能なドライバ設計
 
-## System Overview
+## 使い方概要
 
-The CNC XY Runner processes SVG files through the following pipeline:
+1. Python環境セットアップ
+2. 必要な依存パッケージインストール
+3. 設定ファイル（YAML）作成
+4. `xy_runner.py` を実行
 
-```
-PowerPoint → SVG Export → SVG Path Processing → G-Code Generation → CNC Control
-```
+## サポート・コントリビュート
 
-Key components:
-- **SVG Path Parser**: Converts SVG paths to coordinate sequences
-- **Simulation Driver**: Matplotlib-based visualization
-- **Chuo Driver**: Real hardware interface for Chuo Seiki machines
-- **Configuration System**: YAML-based job definitions
+- Issue・Pull Request歓迎
+- ドキュメント・コード改善提案も歓迎
 
-## Features
+---
 
-- ✅ PowerPoint to CNC workflow
-- ✅ Interactive SVG file selection
-- ✅ Real-time simulation with matplotlib
-- ✅ Chuo Seiki machine integration
-- ✅ Configurable motion parameters
-- ✅ Grid pattern generation
-- ✅ Safety limits and validation
-
-## Hardware Support
-
-- **Chuo Seiki XY Stages**: Serial communication via PySerial
-- **Simulation Mode**: No hardware required for testing
-- **Custom Drivers**: Extensible architecture for new hardware
-
-## License
-
-MIT License - see [LICENSE](../LICENSE) for details.
+詳細は各ガイドを参照してください。
