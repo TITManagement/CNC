@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**PowerPointで描いた図形をCNCで動かす！SVGパスベースXYコントローラ**
+**SVGパスベースXYコントローラ：汎用ドローソフトで作成したSVGもCNCで動かせます！**
 
 [特徴](#特徴) ・ [インストール](#インストール) ・ [使い方](#使い方) ・ [構成](#構成) ・ [ライセンス](#ライセンス)
 
@@ -14,11 +14,11 @@
 
 ## 概要
 
-CNC XY Runnerは、PowerPointで作成した図形をSVG形式で保存し、そのパス情報をもとにCNC XYステージを制御するPythonツールです。シミュレーション表示や実機制御に対応しています。
+汎用ドローソフト（Inkscape, Illustrator, PowerPoint等）で作成した図形をSVG形式で保存し、そのパス情報をもとにCNC XYステージを制御するPythonツールです。シミュレーション表示や実機制御に対応しています。
 
 ### 主な機能
 
-- PowerPoint → SVG → CNC制御の一気通貫ワークフロー
+-- SVG（Inkscape, Illustrator, PowerPoint等） → CNC制御の一気通貫ワークフロー
 - GUIによるファイル選択
 - matplotlibによる軌跡シミュレーション
 - 中央精機XYステージ対応（シリアル通信）
@@ -27,7 +27,7 @@ CNC XY Runnerは、PowerPointで作成した図形をSVG形式で保存し、そ
 
 ## 特徴
 
-- ✅ PowerPoint図形をそのままCNCで描画
+- ✅ SVG図形（Inkscape, Illustrator, PowerPoint等）をそのままCNCで描画
 - ✅ SVGファイルの対話的選択
 - ✅ 軌跡のリアルタイムシミュレーション
 - ✅ 実機制御（中央精機XYステージ）
@@ -75,10 +75,8 @@ pytest, black, mypy等の開発ツールも導入されます。
 ## 使い方
 
 ### 1. 描画ソフトで図形作成 → SVG保存
-例；PowerPointの場合
-1. PowerPointで図形（テキスト不可）を描く
-2. 「ファイル → エクスポート → SVG形式」で保存
-3. 「現在のスライド」を選択
+Inkscape, Illustrator, PowerPointなど任意のドローソフトで図形（テキスト不可）を作成し、SVG形式で保存してください。
+（PowerPointの場合は「ファイル → エクスポート → SVG形式」で保存、「現在のスライド」を選択）
 
 ### 2. シミュレーション実行
 ```bash
@@ -185,5 +183,5 @@ MITライセンス（詳細は[LICENSE](LICENSE)参照）
 ---
 
 <div align="center">
-<strong>PowerPoint図形をCNCで自在に動かす！教育・研究・製造現場で活用できます。</strong>
+<strong>SVG図形（Inkscape, Illustrator, PowerPoint等）をCNCで自在に動かす！教育・研究・製造現場で活用できます。</strong>
 </div>
