@@ -143,6 +143,7 @@ svg_file: select            # GUIでSVGファイル選択
 - 📖 [ユーザーガイド](docs/user-guide.md)
 - 🔧 [開発者ガイド](docs/developer-guide.md)
 - 📚 [総合ドキュメント](docs/index.md)
+- 🧪 [検証ガイド](VERIFICATION_GUIDE.md)
 
 ## コントリビュート
 
