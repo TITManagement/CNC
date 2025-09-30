@@ -9,6 +9,11 @@ Dependencies:
 """
 import math, re, time, argparse, yaml, os, sys
 from dataclasses import dataclass
+import threading
+import queue
+import matplotlib.pyplot as plt
+import time
+import logging
 
 # ========= 共通（簡易Gコードラッパ：直線/円弧） =========
 @dataclass
@@ -35,6 +40,7 @@ class GCodeWrapper:
         - モーダルコマンド（単位・座標モード・送り速度）を状態に反映
         - 動作コマンド（G0,G1,G2,G3）は _motion() で処理
         """
+        logging.debug(f"[DEBUG] GCodeWrapper.exec: line='{line}'")
         line = self._strip_comment(line).strip()
         if not line: return
         if line.startswith("$H"): self.drv.home(); return
@@ -82,6 +88,7 @@ class GCodeWrapper:
             ty = self.m.ypos + y if (y is not None and not self.m.absolute) else y
             if tx is None: tx=self.m.xpos
             if ty is None: ty=self.m.ypos
+            logging.debug(f"[DEBUG] Linear move: tx={tx}, ty={ty}, feed={feed}, rapid={gcode==0}")
             self.drv.move_abs(tx,ty,feed=feed,rapid=(gcode==0))
             self.m.xpos,self.m.ypos=tx,ty
         elif gcode in (2,3):
@@ -106,9 +113,11 @@ class GCodeWrapper:
             e = 0.02
             max_d = 2*math.acos(max(0.0, 1 - e/max(R,1e-9)))
             steps = max(12, int(math.ceil(abs(d)/max(1e-3,max_d))))
+            logging.debug(f"[DEBUG] Arc move: ex={ex}, ey={ey}, cx={cx}, cy={cy}, R={R}, steps={steps}")
             for k in range(1, steps+1):
                 th = start + d*(k/steps)
                 px,py = cx + R*math.cos(th), cy + R*math.sin(th)
+                logging.debug(f"[DEBUG] Arc step: px={px}, py={py}, feed={feed}")
                 self.drv.move_abs(px,py,feed=feed,rapid=False)
             self.m.xpos,self.m.ypos=ex,ey
 
@@ -159,10 +168,11 @@ class SimDriver:
         """
         nx=self._cx if x is None else float(x)
         ny=self._cy if y is None else float(y)
+        logging.debug(f"[DEBUG] SimDriver.move_abs: from=({self._cx},{self._cy}) to=({nx},{ny}), rapid={rapid}, feed={feed}")
         self.tracks.append((self._cx,self._cy,nx,ny,rapid,feed))
         self._cx,self._cy=nx,ny
 
-    def animate_tracks(self, animate=False, fps=10802, title="XY Simulation"):
+    def animate_tracks(self, animate=False, fps=2048, title="XY Simulation"):
         """
         移動履歴（tracks）をmatplotlibで可視化
         animate: Trueならアニメーション表示、Falseなら軌跡のみ
@@ -264,6 +274,7 @@ class ChuoDriver:
         feed: 送り速度（mm/min）
         rapid: 早送り（Trueならrapid_speed, Falseならcut_speed）
         """
+        logging.debug(f"[DEBUG] ChuoDriver.move_abs: x={x}, y={y}, feed={feed}, rapid={rapid}")
         # 速度切り替え
         speed = None
         if rapid:
@@ -302,6 +313,7 @@ def grid_circles(g, origin, area, cell, circle_d, feed, cw=False, dwell_ms=0, sn
         cols = range(nx) if (not snake or j%2==0) else range(nx-1,-1,-1)
         for i in cols:
             cx = base_cx + i*cell; cy = base_cy + j*cell
+            logging.debug(f"[DEBUG] grid_circles: center=({cx:.3f},{cy:.3f})")
             g.exec(f"G0 X{cx:.3f} Y{cy:.3f}")
             g.exec(f"G1 X{(cx+r):.3f} Y{cy:.3f}")
             if cw: g.exec(f"G2 X{(cx+r):.3f} Y{cy:.3f} I{-r:.3f} J0")
@@ -362,9 +374,9 @@ def svg_to_moves(g, file_path, origin=(0.0,0.0), px_to_mm=0.264583, chord_mm=0.5
                         raise SystemExit("y_flip=True の場合は svg_height_mm を指定してください")
                     y_mm = svg_height_mm - y_mm
                 pts.append((ox + x_mm, oy + y_mm))
-
         if not pts:
             continue
+        logging.debug(f"[DEBUG] svg_to_moves: path_points={pts}")
         # サブパス開始点へ早送りしてから描画
         sx, sy = pts[0]
         g.exec(f"G0 X{sx:.3f} Y{sy:.3f}")
@@ -428,7 +440,15 @@ def main():
     ap.add_argument("--driver", choices=["sim","chuo"])
     ap.add_argument("--show", action="store_true")
     ap.add_argument("--no-animate", action="store_true")
+    ap.add_argument("--debug", action="store_true", help="[DEBUG]出力を有効化")
     args = ap.parse_args()
+
+    # --- ログレベル設定 ---
+    import logging
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
+    else:
+        logging.basicConfig(level=logging.WARNING, format='%(asctime)s [%(levelname)s] %(message)s')
 
     # --- 設定ファイル選択・読み込み ---
     config_path = args.config
@@ -527,6 +547,8 @@ def main():
     else:
         # 実機ドライバのクローズ処理
         if hasattr(drv,"close"): drv.close()
+
+# （テスト用スレッド・バッファ・描画サンプルは削除）
 
 if __name__ == "__main__":
     main()
