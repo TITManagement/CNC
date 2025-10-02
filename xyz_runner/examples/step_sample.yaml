@@ -1,0 +1,18 @@
+# XYZ runner用 STEPファイル読み込み設定例
+driver: sim
+defaults:
+  unit: mm
+  mode: absolute
+  feed: 800
+
+jobs:
+  - type: stp
+    file: "examples/sphere_sample.stp"  # STEPファイルパス
+    origin: [0, 0, 0]  # XYZ原点オフセット
+    resolution: 0.5    # 分解能 [mm]
+
+visual:
+  show: true
+  animate: true
+  fps: 30
+  title: "STEP Sphere Animation"

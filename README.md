@@ -1,12 +1,13 @@
-# CNC XY Runner（日本語版）
+# CNC XY/XYZ Runner（クロスプラットフォーム対応）
 
 <div align="center">
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
-**SVGパスベースXYコントローラ：汎用ドローソフトで作成したSVGもCNCで動かせます！**
+**SVG・G-code・STEPファイル対応CNCコントローラ：Windows・Mac・Linuxで動作！**
 
 [特徴](#特徴) ・ [インストール](#インストール) ・ [使い方](#使い方) ・ [構成](#構成) ・ [ライセンス](#ライセンス)
 
@@ -14,39 +15,54 @@
 
 ## 概要
 
-汎用ドローソフト（Inkscape, Illustrator, PowerPoint等）で作成した図形をSVG形式で保存し、そのパス情報をもとにCNC XYステージを制御するPythonツールです。シミュレーション表示や実機制御に対応しています。
+汎用ドローソフト（Inkscape, Illustrator, PowerPoint等）で作成したSVG図形、G-codeファイル、STEPファイルをCNC制御で実行するクロスプラットフォーム対応Pythonツールです。
+
+### サポートプラットフォーム
+- 🪟 **Windows** (Windows 10/11)
+- 🍎 **macOS** (macOS 10.15+)
+- 🐧 **Linux** (Ubuntu 24.04, その他ディストリビューション)
 
 ### 主な機能
 
--- SVG（Inkscape, Illustrator, PowerPoint等） → CNC制御の一気通貫ワークフロー
-- GUIによるファイル選択
-- matplotlibによる軌跡シミュレーション
+- **2D制御 (xy_runner)**: SVG（Inkscape, Illustrator, PowerPoint等） → CNC制御
+- **3D制御 (xyz_runner)**: G-codeファイル・STEPファイル → 3D CNC制御
+- GUIによる直感的なファイル選択
+- matplotlibによる軌跡シミュレーション（2D/3D）
 - 中央精機XYステージ対応（シリアル通信）
-- 柔軟なYAML設定
-- 安全リミット・パラメータ管理
+- クロスプラットフォーム自動セットアップ
 
 ## 特徴
 
+### 2D制御 (xy_runner)
 - ✅ SVG図形（Inkscape, Illustrator, PowerPoint等）をそのままCNCで描画
 - ✅ SVGファイルの対話的選択
-- ✅ 軌跡のリアルタイムシミュレーション
+- ✅ 2D軌跡のリアルタイムシミュレーション
+
+### 3D制御 (xyz_runner)
+- ✅ G-codeファイル・STEPファイル直接実行
+- ✅ 3D軌跡アニメーション表示
+- ✅ ファイル選択のみのシンプルUI
+
+### 共通機能
+- ✅ クロスプラットフォーム対応（Windows・macOS・Linux）
 - ✅ 実機制御（中央精機XYステージ）
-- ✅ YAMLによる柔軟なジョブ定義
-- ✅ グリッド・円パターン生成
+- ✅ プラットフォーム別自動セットアップ
 - ✅ 安全リミット設定
 - ✅ 拡張性の高いドライバ設計
 
 ## インストール
 
-### 推奨セットアップ
+### 🚀 ワンクリックセットアップ（推奨）
 
 ```bash
 git clone https://github.com/TITManagement/CNC.git
 cd CNC
-./scripts/setup.sh
+python setup_platform.py
 ```
 
-### 手動インストール
+プラットフォームを自動検出し、仮想環境・依存関係・起動スクリプトを一括設定します。
+
+### 🛠️ 手動インストール
 
 ```bash
 # リポジトリ取得

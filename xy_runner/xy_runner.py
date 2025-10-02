@@ -3,7 +3,7 @@
 """
 Config-driven XY runner
 - Drivers: sim / chuo
-- Jobs: grid_circles, svg  (NEW: SVG -> path -> moves)
+- Jobs: grid_circles, svg  (NEW: SVG -> path -> moves) 
 Dependencies:
   pip install pyyaml matplotlib pyserial svgpathtools
 """
@@ -455,10 +455,10 @@ def main():
     if not config_path:
         # config未指定時はusage例を表示し、対話選択
         print("\n[Usage :]")
-        print("  python src/xy_runner.py --config <設定ファイル.yaml>")
-        print("  python src/xy_runner.py --config examples/job_svg.yaml")
-        print("  python src/xy_runner.py --driver sim --show")
-        print("  python src/xy_runner.py --help")
+        print("  python xy_runner.py --config <設定ファイル.yaml>")
+        print("  python xy_runner.py --config examples/[SIM]sample_SVG.yaml")
+        print("  python xy_runner.py --driver sim --show")
+        print("  python xy_runner.py --help")
         print("")
     config_path = select_config_interactive()
 
@@ -547,8 +547,6 @@ def main():
     else:
         # 実機ドライバのクローズ処理
         if hasattr(drv,"close"): drv.close()
-
-# （テスト用スレッド・バッファ・描画サンプルは削除）
 
 if __name__ == "__main__":
     main()

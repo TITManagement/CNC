@@ -1,0 +1,19 @@
+# XYZ runner用 複数STEP球体読み込み設定例
+driver: sim
+defaults:
+  unit: mm
+  mode: absolute
+  feed: 600
+
+jobs:
+  - type: stp
+    file: "examples/multi_spheres.stp"  # 複数球体STEPファイル
+    origin: [0, 0, 0]  # XYZ原点オフセット
+    resolution: 0.3    # 分解能 [mm]
+    mesh_quality: high # メッシュ品質
+
+visual:
+  show: true
+  animate: true
+  fps: 45
+  title: "Multi-Sphere STEP Animation"
