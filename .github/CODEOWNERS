@@ -1,0 +1,5 @@
+# CODEOWNERS: 重要設定の変更は @tinoue のレビューを必須にする例
+/mypy.ini @tinoue
+/.assistant-policy.md @tinoue
+/common/ @tinoue
+/.github/ @tinoue

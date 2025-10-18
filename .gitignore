@@ -108,3 +108,6 @@ debug_*.py
 *.nc
 output/
 logs/
+archived/
+.ruff_chche
+.pytest_cache

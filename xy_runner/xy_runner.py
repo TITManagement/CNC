@@ -14,7 +14,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Any
 
 if __package__ in (None, ""):
     ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -30,13 +30,14 @@ from common.platform import EnvironmentAdapter
 from common.runtime import ConfigLoader, JobDispatcher, VisualizationController
 
 
-def _resolve_resource_path(file_entry: str, context: Mapping[str, object]) -> Path:
+def _resolve_resource_path(file_entry: str, context: Mapping[str, Any]) -> Path:
     path = Path(file_entry).expanduser()
     if path.is_absolute():
         return path
 
-    config_dir = Path(context.get("config_dir", Path.cwd()))
-    project_root = Path(context.get("project_root", config_dir))
+    # context entries may be Path or str; coerce to str before constructing Path
+    config_dir = Path(str(context.get("config_dir", Path.cwd())))
+    project_root = Path(str(context.get("project_root", config_dir)))
     candidates = []
     for base in (config_dir, config_dir.parent, project_root):
         if base and base not in candidates:

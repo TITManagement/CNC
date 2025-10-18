@@ -33,12 +33,20 @@ pip install --upgrade pip
 
 # Install dependencies
 echo "📥 Installing dependencies..."
-pip install -r requirements.txt
+if [ -f "requirements.txt" ]; then
+    pip install -r requirements.txt
+else
+    echo "⚠️  requirements.txt not found at project root; skipping dependency install"
+fi
 
 # Install development dependencies (optional)
 if [ "$1" = "--dev" ] || [ "$1" = "-d" ]; then
     echo "🛠️  Installing development dependencies..."
-    pip install -r requirements-dev.txt
+    if [ -f "requirements-dev.txt" ]; then
+        pip install -r requirements-dev.txt
+    else
+        echo "⚠️  requirements-dev.txt not found at project root; skipping dev deps"
+    fi
 fi
 
 # Install package in editable mode for development

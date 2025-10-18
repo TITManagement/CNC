@@ -1,15 +1,15 @@
-# XYZ runner用 螺旋描画設定
+# XYZ runner用 立方体描画設定
 driver: sim
 defaults:
   unit: mm
   mode: absolute
-  feed: 800
+  feed: 1000
 
 jobs:
   - type: gcode
-    file: "examples/spiral.gcode"
+    file: "examples/cube.gcode"
     origin: [0, 0, 0]
 
 visual:
   show: true
-  title: "3D Spiral Pattern"
+  title: "3D Cube Pattern"
