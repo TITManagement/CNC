@@ -1,0 +1,4 @@
+pyyaml>=6.0
+matplotlib>=3.7.0
+pyserial>=3.5
+svgpathtools>=1.7.0
