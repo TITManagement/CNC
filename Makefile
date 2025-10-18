@@ -10,11 +10,11 @@ help:
 
 setup:
 	@echo "Running setup script..."
-	@bash ./scripts/setup.sh
+	@bash ./dev/scripts/setup.sh
 
 dev-setup:
 	@echo "Running setup script with development dependencies..."
-	@bash ./scripts/setup.sh --dev
+	@bash ./dev/scripts/setup.sh --dev
 
 platform-setup:
 	@echo "Running cross-platform setup via package entry point..."
