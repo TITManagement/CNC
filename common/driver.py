@@ -1,4 +1,7 @@
 """
-ドライバ基底クラス・共通処理
+互換性維持のためのラッパ。新しいコードは ``common.drivers`` を参照。
 """
-# ここにSimDriver, ChuoDriver等の共通部分を実装
+
+from common.drivers import CncDriver
+
+__all__ = ["CncDriver"]
