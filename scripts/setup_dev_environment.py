@@ -4,7 +4,9 @@
 - venv作成
 - 必要パッケージインストール
 """
-import os, sys, subprocess
+import os
+import sys
+import subprocess
 
 def main():
     print("[SETUP] Python仮想環境を作成します...")
