@@ -637,10 +637,15 @@ def select_config_interactive():
     import glob
 
     runner_dir = Path(__file__).resolve().parent
+    # Look in multiple locations: current working dir, runner dir, and common examples
     search_dirs = [
         Path.cwd(),
         runner_dir,
         runner_dir / "examples",
+        runner_dir / "example",  # some branches/repos use singular 'example'
+        Path(runner_dir).parents[1] / "examples",  # repo-root/examples
+        Path(runner_dir).parents[1] / "examples" / "xy",
+        runner_dir / "example",
     ]
 
     candidates = []
