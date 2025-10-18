@@ -132,7 +132,7 @@ python3 {runner_name}.py "$@"
 
             print(f"✅ 起動スクリプト '{script_path.name}' を作成しました")
             return script_path
-        except Exception as e:
+        except (OSError, IOError) as e:
             print(f"❌ 起動スクリプトの作成に失敗: {e}")
             return None
 

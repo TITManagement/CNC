@@ -1,0 +1,28 @@
+name: Platform setup smoke test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  platform-setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install package in editable mode
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run cnc-platform-setup --help
+        run: |
+          cnc-platform-setup --help
