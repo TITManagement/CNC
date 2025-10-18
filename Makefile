@@ -1,6 +1,7 @@
 # Makefile - common development shortcuts for CNC project
 
 .PHONY: setup dev-setup help
+ .PHONY: platform-setup
 
 help:
 	@echo "Makefile targets:"
@@ -14,3 +15,7 @@ setup:
 dev-setup:
 	@echo "Running setup script with development dependencies..."
 	@bash ./scripts/setup.sh --dev
+
+platform-setup:
+	@echo "Running cross-platform setup via package entry point..."
+	@python3 -m cnc_tools.setup_platform

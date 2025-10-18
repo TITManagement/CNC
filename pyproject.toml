@@ -50,6 +50,7 @@ Issues = "https://github.com/TITManagement/CNC/issues"
 
 [project.scripts]
 cnc-xy-runner = "src.xy_runner:main"
+cnc-platform-setup = "cnc_tools.setup_platform:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
