@@ -1,0 +1,28 @@
+# GSC-02 実機用サンプル設定
+driver: gsc02
+port: /dev/tty.usbserial-GSC02
+baud: 9600          # 必要に応じて 2400/4800/9600/19200 を選択
+timeout: 1.5
+write_timeout: 1.5
+mm_per_pulse: 0.001  # 1パルスあたりのmm
+
+defaults:
+  unit: mm
+  mode: absolute
+  feed: 800         # G-code の初期送り
+
+jobs:
+  - type: svg
+    file:
+    origin: [0, 0]
+    px_to_mm: 0.264583
+    chord_mm: 0.5
+    feed: 600
+    y_flip: true
+    svg_height_mm: 297
+    sort_paths: true
+
+visual:
+  show: true
+  animate: false
+  title: "GSC-02 実機描画"

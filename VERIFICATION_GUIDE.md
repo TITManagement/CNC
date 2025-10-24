@@ -7,24 +7,28 @@
 
 1. 仮想環境を有効化し、依存パッケージをインストール
 	```bash
-	python3 -m venv .venv
-	source .venv/bin/activate
-	pip install -r requirements.txt
+	python3 -m venv .venv_CNC
+	source .venv_CNC/bin/activate
+	pip install --no-build-isolation -e .
 	```
-2. サンプルYAML（例: examples/[SIM]sample_SVG.yaml）でシミュレーション実行
+2. サンプルYAML（例: examples/example_xy/SIM_sample_SVG.yaml）でシミュレーション実行
 	```bash
-	python src/xy_runner.py --config examples/[SIM]sample_SVG.yaml --show
+	python -m xy_runner.xy_runner --config examples/example_xy/SIM_sample_SVG.yaml --show
 	```
 3. matplotlibウィンドウで軌跡が表示されることを確認
+4. 3D ランナーも確認
+	```bash
+	python -m xyz_runner.xyz_runner --config examples/example_xyz/grid_spheres.yaml --show
+	```
 
 ## 実機動作確認
 
 1. 実機（中央精機XYステージ）をPCに接続
-2. 実機用YAML（例: examples/[REAL]job_svg_path_chuo.yaml）を選択
+2. 実機用YAML（例: examples/example_xy/REAL_job_svg_path_chuo.yaml）を選択
 3. ポート・ボーレート等の設定値を確認
 4. 実行コマンド例
 	```bash
-	python src/xy_runner.py --config examples/[REAL]job_svg_path_chuo.yaml
+	python -m xy_runner.xy_runner --config examples/example_xy/REAL_job_svg_path_chuo.yaml
 	```
 5. 実機が指定通り動作することを確認
 

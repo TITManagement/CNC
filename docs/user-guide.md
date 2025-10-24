@@ -2,22 +2,16 @@
 
 ## インストール
 
-### クイックセットアップ
-自動セットアップスクリプトを使います:
-```bash
-./scripts/setup.sh
-```
-
 ### 手動セットアップ
 1. 仮想環境の作成:
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
+   python3 -m venv .venv_CNC
+   source .venv_CNC/bin/activate
    ```
 
 2. 依存ライブラリのインストール:
    ```bash
-   pip install -r requirements.txt
+   pip install --no-build-isolation -e .
    ```
 
 ## 基本的な使い方
@@ -26,13 +20,51 @@
 1. SVGを準備する。PowerPointスライドからも作成可能
 2. 設定ファイルで実行:
    ```bash
-   python src/xy_runner.py examples/job_svg.yaml
+   python -m xy_runner.xy_runner --config examples/example_xy/SIM_sample_SVG.yaml
+   ```
+3. 3D ランナーの例:
+   ```bash
+   python -m xyz_runner.xyz_runner --config examples/example_xyz/grid_spheres.yaml
    ```
 
 ### 設定ファイル
-- `job_svg.yaml` - SVGファイル選択ダイアログ付きの設定
-- `job_svg_chuo.yaml` - 実機制御用設定
-- `job.yaml` - グリッドパターン生成
+- `examples/example_xy/SIM_sample_SVG.yaml` - SVGファイル選択ダイアログ付きの設定
+- `examples/example_xy/REAL_job_svg_path_chuo.yaml` - 実機制御用設定
+- `examples/example_xy/SIM_grid_circles_default_pattern.yaml` - グリッドパターン生成
+- `driver_settings` セクションで `rapid_speed` / `cut_speed` / `accel` を設定すると、中央精機ステージの速度・加速度が適用されます。
+
+`driver: chuo` を使用する場合は、以下のパラメータを必ず指定してください:
+
+```yaml
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005        # 1 パルスあたりの mm
+qt_enable_response: true    # コントローラのレスポンスを有効化
+driver_settings:
+  rapid_speed: 3000
+  cut_speed: 1200
+  accel: 100
+
+# XYZ Runner で実機を使う場合の例
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+driver_settings:
+  rapid_speed: 5000
+  cut_speed: 1500
+  accel: 150
+
+# GSC-02 を使う場合の例
+driver: gsc02
+port: /dev/tty.usbserial-GSC02
+baud: 9600
+timeout: 1.5
+write_timeout: 1.5
+mm_per_pulse: 0.001
+```
 
 ## PowerPoint → SVG ワークフロー
 

@@ -1,4 +1,14 @@
 driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+
+driver_settings:
+  rapid_speed: 3000
+  cut_speed: 1000
+  accel: 120
+
 visual:
   show: true
   animate: false

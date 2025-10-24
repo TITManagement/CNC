@@ -46,10 +46,10 @@ def main() -> int:
     print("To run the application, activate the venv and run your command, e.g:")
     if os.name == "nt":
         print(r"  .\.venv\Scripts\activate.bat")
-        print(r"  python xy_runner\xy_runner.py --config job.yaml")
+        print(r"  python src\xy_runner\xy_runner.py --config examples\example_xy\SIM_sample_SVG.yaml")
     else:
         print("  source .venv/bin/activate")
-        print("  python xy_runner/xy_runner.py --config job.yaml")
+        print("  python src/xy_runner/xy_runner.py --config examples/example_xy/SIM_sample_SVG.yaml")
     return 0
 
 

@@ -1,7 +1,0 @@
-pyyaml>=6.0
-matplotlib>=3.7.0
-pyserial>=3.5
-svgpathtools>=1.7.0
-
-# Optional heavy native dependency (not installed by default):
-# pythonocc-core>=7.7.0  # requires system libs; consider conda-forge or skip on minimal environments

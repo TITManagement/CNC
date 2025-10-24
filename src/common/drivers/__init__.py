@@ -8,5 +8,7 @@ The original file was missing in the working tree; restored minimal contents
 based on the backup.
 """
 from .base import CncDriver
+from .chuo_stage_driver import ChuoDriver
+from .gsc02_stage_driver import GSC02Driver
 
-__all__ = ["CncDriver"]
+__all__ = ["CncDriver", "ChuoDriver", "GSC02Driver"]

@@ -5,13 +5,14 @@
 ```
 CNC/
 ├── src/              # ソースコード
-│   └── xy_runner.py  # メインアプリ
+│   ├── common/       # 共有ロジック
+│   ├── xy_runner/    # 2D ランナー
+│   └── xyz_runner/   # 3D ランナー
 ├── examples/         # 設定・サンプル
-│   ├── job*.yaml     # ジョブ設定
-│   └── *.svg         # SVGサンプル
+│   ├── example_xy/   # XY ランナー用 YAML
+│   └── example_xyz/  # XYZ ランナー用 YAML
 ├── docs/             # ドキュメント
-├── scripts/          # セットアップ・ユーティリティ
-├── requirements.txt  # Python依存
+├── env_setup.py      # 仮想環境セットアップ補助
 └── pyproject.toml    # パッケージ設定
 ```
 
@@ -57,7 +58,9 @@ class ChuoDriver:
    ```bash
    git clone https://github.com/TITManagement/CNC.git
    cd CNC
-   ./scripts/setup.sh --dev
+   python3 -m venv .venv_CNC
+   source .venv_CNC/bin/activate
+   pip install --no-build-isolation -e .
    ```
 
 2. **pre-commitフックのインストール**:
@@ -120,6 +123,14 @@ YAML設定で以下をサポート:
 ```yaml
 # ハードウェアドライバ選択
 driver: sim  # または 'chuo', 'new'
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+driver_settings:
+  rapid_speed: 3000
+  cut_speed: 1200
+  accel: 100
 
 # モーション制御
 motion_params:
@@ -133,6 +144,25 @@ pattern:
   type: grid_circles
   rows: 3
   cols: 3
+
+# XYZ Runner でステージ制御する例
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+driver_settings:
+  rapid_speed: 5000
+  cut_speed: 1500
+  accel: 150
+
+# GSC-02 ドライバを使う例
+driver: gsc02
+port: /dev/tty.usbserial-GSC02
+baud: 9600
+timeout: 1.5
+write_timeout: 1.5
+mm_per_pulse: 0.001
 ```
 
 ## SVG処理

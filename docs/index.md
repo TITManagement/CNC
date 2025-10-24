@@ -23,24 +23,25 @@
 
 1. 仮想環境を作る／有効化
   ```bash
-  python3 -m venv .venv
-  source .venv/bin/activate
+  python3 -m venv .venv_CNC
+  source .venv_CNC/bin/activate
   ```
 2. 依存をインストール（最低限）
   ```bash
-  pip install -r requirements.txt
+  pip install --no-build-isolation -e .
   ```
 3. シミュレーションで素早く動作確認（smoke）
   ```bash
   # XY シミュレーション（短距離移動）
   python - <<'PY'
-  import sys
-  sys.path.insert(0, '.')
   from xy_runner.xy_runner import SimDriver, GCodeWrapper
   d = SimDriver(); g = GCodeWrapper(d)
   g.exec('G21 G90'); g.exec('F100'); g.exec('G0 X1 Y1'); g.exec('G1 X2 Y2')
   print('OK', len(d.tracks))
   PY
+
+  # XYZ ランナーの起動例
+  python -m xyz_runner.xyz_runner --config examples/example_xyz/grid_spheres.yaml --no-animate
   ```
 
 4. 実機接続時は `--driver chuo` と設定ファイルで `port`/`baud` を指定して低速でテストしてください。

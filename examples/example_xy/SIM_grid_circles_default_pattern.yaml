@@ -2,6 +2,12 @@ driver: sim          # sim / chuo
 port: COM3           # 実機時のみ使用
 baud: 9600
 mm_per_pulse: 0.0005 # 実機時のみ: 1パルスあたりのmm
+qt_enable_response: true
+
+driver_settings:
+  rapid_speed: 3000  # 早送り速度(mm/min)
+  cut_speed: 1200    # 描画速度(mm/min)
+  accel: 100         # 加減速パラメータ
 
 visual:
   show: true

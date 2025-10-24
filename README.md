@@ -52,17 +52,7 @@
 
 ## インストール
 
-### 🚀 ワンクリックセットアップ（推奨）
-
-```bash
-git clone https://github.com/TITManagement/CNC.git
-cd CNC
-python setup_platform.py
-```
-
-プラットフォームを自動検出し、仮想環境・依存関係・起動スクリプトを一括設定します。
-
-### 🛠️ 手動インストール
+### 🛠️ インストール手順（推奨）
 
 ```bash
 # リポジトリ取得
@@ -70,23 +60,14 @@ git clone https://github.com/TITManagement/CNC.git
 cd CNC
 
 # 仮想環境作成
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv_CNC
+source .venv_CNC/bin/activate
 
-# 依存ライブラリインストール
-pip install -r requirements.txt
-
-# 開発モードインストール
-pip install -e .
+# 依存ライブラリインストール（開発モード）
+pip install --no-build-isolation -e .
 ```
 
-### 開発環境セットアップ
-
-```bash
-./scripts/setup.sh --dev
-```
-
-pytest, black, mypy等の開発ツールも導入されます。
+Windows の場合は `.\.venv_CNC\Scripts\activate` を使用してください。
 
 ## 使い方
 
@@ -96,7 +77,9 @@ Inkscape, Illustrator, PowerPointなど任意のドローソフトで図形（�
 
 ### 2. シミュレーション実行
 ```bash
-python src/xy_runner.py examples/job_svg_path.yaml
+python -m xy_runner.xy_runner --config examples/example_xy/SIM_sample_SVG.yaml
+# 3D ランナー（任意）
+python -m xyz_runner.xyz_runner --config examples/example_xyz/grid_spheres.yaml
 ```
 
 ### 3. SVGファイル選択
@@ -108,18 +91,19 @@ python src/xy_runner.py examples/job_svg_path.yaml
 ```
 CNC/
 ├── src/                    # ソースコード
-│   └── xy_runner.py        # メインスクリプト
+│   ├── common/             # 共有ロジック
+│   ├── xy_runner/          # 2D ランナー
+│   │   └── xy_runner.py    # メインスクリプト
+│   └── xyz_runner/         # 3D ランナー
+│       └── xyz_runner.py   # メインスクリプト
 ├── examples/               # 設定・サンプル
-│   ├── job_svg_path.yaml   # SVG描画設定
-│   ├── job_svg_chuo.yaml   # 実機制御設定
-│   ├── job_grid_circles.yaml # グリッド円パターン
+│   ├── example_xy/         # XY 用 YAML
+│   ├── example_xyz/        # XYZ 用 YAML
 │   └── drawing.svg         # SVGサンプル
 ├── docs/                   # ドキュメント
 │   ├── user-guide.md       # ユーザーガイド
 │   └── developer-guide.md  # 開発者ガイド
-├── scripts/                # ユーティリティ
-│   └── setup.sh            # 環境セットアップ
-├── requirements.txt        # 依存ライブラリ
+├── env_setup.py            # 仮想環境セットアップ補助
 ├── pyproject.toml          # パッケージ設定
 └── README.md               # このファイル
 ```
@@ -131,12 +115,34 @@ motion_params:
   lift_height: 5            # Z軸リフト高さ
 
 ```yaml
-# examples/job_svg_path.yaml
-driver: sim                 # シミュレーション or 'chuo'で実機
+# examples/example_xy/SIM_sample_SVG.yaml
+driver: sim
 svg_file: select            # GUIでSVGファイル選択
-
-  animate: true             # アニメーション表示
+visual:
+  animate: true
   title: "CNC XY Simulation"
+
+# driver: chuo を用いる場合の例（XY ランナー）
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005        # 1パルスあたりのmm
+qt_enable_response: true    # 必要に応じてレスポンスを有効化
+driver_settings:
+  rapid_speed: 3000         # 早送り速度 (mm/min)
+  cut_speed: 1200           # 描画速度 (mm/min)
+  accel: 100                # 加減速パラメータ
+
+# driver: chuo を用いる場合の例（XYZ ランナー）
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+driver_settings:
+  rapid_speed: 5000
+  cut_speed: 1500
+  accel: 150
 ```
 
 
@@ -202,3 +208,10 @@ MITライセンス（詳細は[LICENSE](LICENSE)参照）
 <div align="center">
 <strong>SVG図形（Inkscape, Illustrator, PowerPoint等）をCNCで自在に動かす！教育・研究・製造現場で活用できます。</strong>
 </div>
+# driver: gsc02 を用いる場合の例（XY ランナー）
+driver: gsc02
+port: /dev/tty.usbserial-GSC02
+baud: 9600
+timeout: 1.5
+write_timeout: 1.5
+mm_per_pulse: 0.001

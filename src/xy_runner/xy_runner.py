@@ -16,14 +16,21 @@ import time
 from pathlib import Path
 from typing import Mapping, Optional, Any
 
-if __package__ in (None, ""):
-    ROOT_DIR = Path(__file__).resolve().parents[1]
-    if str(ROOT_DIR) not in sys.path:
-        sys.path.insert(0, str(ROOT_DIR))
+SRC_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = SRC_DIR.parent
+src_str = str(SRC_DIR)
+if src_str in sys.path:
+    sys.path.remove(src_str)
+sys.path.insert(0, src_str)
 
 import matplotlib.pyplot as plt
 
-from common.drivers import CncDriver
+from common.drivers import CncDriver, ChuoDriver, GSC02Driver
+
+try:  # Optional dependency: pyserial is only required for hardware drivers
+    import serial  # type: ignore
+except Exception:  # pragma: no cover
+    serial = None  # type: ignore
 from common.gcode import LinearGCodeInterpreter, ModalState2D
 from common.jobs import Job, JobFactory
 from common.platform import EnvironmentAdapter
@@ -247,109 +254,6 @@ class SimDriver(CncDriver):
         plt.show()
 
 
-class ChuoDriver(CncDriver):
-    axes = ("x", "y")
-
-    def __init__(self, port: str, baud: int = 9600, timeout: float = 1.0, mm_to_device=None):
-        """
-        実機（中央精機XYステージ）用ドライバ。シリアル通信で座標指示。
-        port: シリアルポート名
-        baud: ボーレート
-        timeout: タイムアウト秒
-        mm_to_device: mm→デバイス座標変換関数
-        """
-        import serial
-
-        self.ser = serial.Serial(port, baudrate=baud, timeout=timeout)
-        time.sleep(0.2)
-        self.mm_to_dev = (lambda v: v) if mm_to_device is None else mm_to_device
-
-    def close(self):
-        """
-        シリアルポートをクローズ
-        """
-        try:
-            self.ser.close()
-        except Exception:
-            pass
-
-    def _write_line(self, s: str):
-        """
-        コマンド文字列をデバイスへ送信
-        s: 送信文字列
-        """
-        self.ser.write((s + "\r").encode("ascii"))
-
-    def _wait(self):
-        """
-        通信待ち（短時間スリープ）
-        """
-        time.sleep(0.01)
-
-    def set_units_mm(self):
-        """
-        単位をmmに設定（デバイス側で必要なら拡張）
-        """
-        pass
-
-    def set_units_inch(self):
-        """
-        単位をinchに設定（デバイス側で必要なら拡張）
-        """
-        pass
-
-    def home(self):
-        """
-        原点復帰（デバイス側で必要なら拡張）
-        """
-        self._wait()
-
-    def move_abs(self, *, feed=None, rapid=False, **axes):
-        """指定座標へ移動コマンド送信。axes に x/y を与える。"""
-        x = axes.get("x")
-        y = axes.get("y")
-        logging.debug(
-            "[DEBUG] ChuoDriver.move_abs: x=%s, y=%s, feed=%s, rapid=%s",
-            x,
-            y,
-            feed,
-            rapid,
-        )
-        # 速度切り替え
-        speed = None
-        if rapid:
-            speed = getattr(self, "rapid_speed", None)
-        else:
-            speed = getattr(self, "cut_speed", None)
-        # feed優先
-        if feed is not None:
-            speed = feed
-        # コマンド生成
-        X = None if x is None else self.mm_to_dev(x)
-        Y = None if y is None else self.mm_to_dev(y)
-        parts = []
-        if X is not None:
-            parts.append(f"X{int(round(X))}")
-        if Y is not None:
-            parts.append(f"Y{int(round(Y))}")
-        if speed is not None:
-            parts.append(f"F{int(round(speed))}")
-        if parts:
-            self._write_line(" ".join(parts))
-            self._wait()
-
-    def set_speed_params(self, rapid_speed=None, cut_speed=None):
-        """
-        早送り・描画時の速度を設定
-        rapid_speed: 早送り速度（mm/min）
-        cut_speed: 描画速度（mm/min）
-        """
-        if rapid_speed is not None:
-            self.rapid_speed = rapid_speed
-        if cut_speed is not None:
-            self.cut_speed = cut_speed
-
-
 # ========= パターン =========
 def grid_circles(g, origin, area, cell, circle_d, feed, cw=False, dwell_ms=0, snake=True):
     ox, oy = origin
@@ -571,28 +475,94 @@ class XYRunnerApp:
 
     def _print_usage_examples(self) -> None:
         print("\n[Usage :]")
-        print("  python xy_runner.py --config <設定ファイル.yaml>")
-        print("  python xy_runner.py --config examples/[SIM]sample_SVG.yaml")
-        print("  python xy_runner.py --driver sim --show")
-        print("  python xy_runner.py --help")
+        print("  python src/xy_runner/xy_runner.py --config <設定ファイル.yaml>")
+        print("  python src/xy_runner/xy_runner.py --config examples/example_xy/SIM_sample_SVG.yaml")
+        print("  python src/xy_runner/xy_runner.py --driver sim --show")
+        print("  python src/xy_runner/xy_runner.py --help")
         print("")
 
     def _create_driver(self, cfg):
         driver_name = self.args.driver or cfg.get("driver", "sim")
         mm_per_pulse = cfg.get("mm_per_pulse")
+        mm_per_pulse_val: Optional[float] = None
+        mm_to_device_fn = None
+        if callable(mm_per_pulse):
+            mm_to_device_fn = mm_per_pulse  # type: ignore[assignment]
+        elif mm_per_pulse is not None:
+            try:
+                mm_per_pulse_val = float(mm_per_pulse)
+            except (TypeError, ValueError):
+                logging.warning("mm_per_pulse が数値に変換できません: %s", mm_per_pulse)
         if driver_name == "sim":
             driver = SimDriver()
-        else:
+        elif driver_name == "chuo":
             port = cfg.get("port")
-            baud = int(cfg.get("baud", 9600))
             if not port:
                 raise SystemExit("driver=chuo には port が必要")
-            mm_to_dev = (
-                (lambda mm: mm / mm_per_pulse)
-                if (mm_per_pulse and mm_per_pulse > 0)
-                else (lambda mm: mm)
-            )
-            driver = ChuoDriver(port=port, baud=baud, mm_to_device=mm_to_dev)
+            baud = int(cfg.get("baud", 9600))
+            timeout = float(cfg.get("timeout", 1.0))
+            write_timeout = float(cfg.get("write_timeout", 1.0))
+            accel = int(cfg.get("qt_accel", cfg.get("accel", 100)))
+            enable_response = bool(cfg.get("qt_enable_response", True))
+
+            try:
+                driver = ChuoDriver(
+                    port=port,
+                    baudrate=baud,
+                    timeout=timeout,
+                    write_timeout=write_timeout,
+                    mm_per_pulse=mm_per_pulse_val,
+                    mm_to_device=mm_to_device_fn,
+                    enable_response=enable_response,
+                    default_accel=accel,
+                )
+            except Exception as exc:
+                if serial is not None and isinstance(exc, serial.SerialException):
+                    raise SystemExit(f"ChuoDriver: ポート '{port}' を開けませんでした: {exc}") from exc
+                raise
+            driver_settings = cfg.get("driver_settings", {})
+            if isinstance(driver_settings, Mapping):
+                driver.set_speed_params(
+                    rapid_speed=driver_settings.get("rapid_speed"),
+                    cut_speed=driver_settings.get("cut_speed"),
+                    accel=driver_settings.get("accel"),
+                )
+        elif driver_name == "gsc02":
+            port = cfg.get("port")
+            if not port:
+                raise SystemExit("driver=gsc02 には port が必要")
+            if mm_to_device_fn is not None:
+                raise SystemExit("driver=gsc02 では mm_per_pulse に関数は使用できません")
+            if mm_per_pulse_val is None:
+                raise SystemExit("driver=gsc02 には mm_per_pulse (数値) が必要です")
+
+            controller_kwargs = {}
+            if cfg.get("baudrate") is not None:
+                controller_kwargs["baudrate"] = int(cfg.get("baudrate"))
+            elif cfg.get("baud") is not None:
+                controller_kwargs["baudrate"] = int(cfg.get("baud"))
+            if cfg.get("timeout") is not None:
+                controller_kwargs["timeout"] = float(cfg.get("timeout"))
+            if cfg.get("write_timeout") is not None:
+                controller_kwargs["write_timeout"] = float(cfg.get("write_timeout"))
+            for key in ("rtscts", "encoding", "terminator", "bytesize", "parity", "stopbits"):
+                value = cfg.get(key)
+                if value is not None:
+                    controller_kwargs[key] = value
+            home_dirs = cfg.get("gsc_home_dirs", "+-")
+            try:
+                driver = GSC02Driver(
+                    port=port,
+                    mm_per_pulse=mm_per_pulse_val,
+                    home_dirs=str(home_dirs),
+                    controller_kwargs=controller_kwargs,
+                )
+            except Exception as exc:
+                if serial is not None and isinstance(exc, serial.SerialException):
+                    raise SystemExit(f"GSC02Driver: ポート '{port}' を開けませんでした: {exc}") from exc
+                raise
+        else:
+            raise SystemExit(f"未知の driver 設定: {driver_name}")
         return driver, driver_name
 
     def _apply_defaults(self, gcode: GCodeWrapper, defaults: dict) -> None:
@@ -639,18 +609,19 @@ def select_config_interactive():
 
     runner_dir = Path(__file__).resolve().parent
     # Look in multiple locations: current working dir, runner dir, and common examples
+    repo_root = runner_dir.parents[1]
     search_dirs = [
         Path.cwd(),
         runner_dir,
         runner_dir / "examples",
-        runner_dir / "example",  # some branches/repos use singular 'example'
-        Path(runner_dir).parents[1] / "examples",  # repo-root/examples
-        Path(runner_dir).parents[1] / "examples" / "xy",
-        runner_dir / "example",
+        runner_dir / "example",  # legacy layout
+        repo_root / "examples",
+        repo_root / "examples" / "xy",
+        repo_root / "examples" / "example_xy",
     ]
 
     candidates = []
-    for directory in search_dirs:
+    for directory in dict.fromkeys(search_dirs):  # preserve order, drop duplicates
         pattern = str(directory / "*.yaml")
         candidates.extend(glob.glob(pattern))
 

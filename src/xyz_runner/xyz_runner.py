@@ -16,14 +16,16 @@ import sys
 from pathlib import Path
 from typing import Mapping, Optional
 
-if __package__ in (None, ""):
-    ROOT_DIR = Path(__file__).resolve().parents[1]
-    if str(ROOT_DIR) not in sys.path:
-        sys.path.insert(0, str(ROOT_DIR))
+SRC_DIR = Path(__file__).resolve().parents[1]
+ROOT_DIR = SRC_DIR.parent
+src_str = str(SRC_DIR)
+if src_str in sys.path:
+    sys.path.remove(src_str)
+sys.path.insert(0, src_str)
 
 import matplotlib.pyplot as plt
 
-from common.drivers import CncDriver
+from common.drivers import CncDriver, ChuoDriver
 from common.gcode import LinearGCodeInterpreter, ModalState3D
 from common.jobs import Job, JobFactory
 from common.platform import EnvironmentAdapter
@@ -218,8 +220,50 @@ class XYZRunnerApp:
         driver_name = self.args.driver or cfg.get("driver", "sim")
         if driver_name == "sim":
             return SimDriver3D()
-        # 実機用は未実装（必要に応じて拡張）
-        return SimDriver3D()
+
+        port = cfg.get("port")
+        if not port:
+            logging.warning("driver=chuo を選択しましたが port が未設定のためシミュレーションを使用します。")
+            return SimDriver3D()
+
+        baud = int(cfg.get("baud", 9600))
+        timeout = float(cfg.get("timeout", 1.0))
+        write_timeout = float(cfg.get("write_timeout", 1.0))
+        accel = int(cfg.get("qt_accel", cfg.get("accel", 100)))
+        enable_response = bool(cfg.get("qt_enable_response", True))
+
+        mm_per_pulse_val: Optional[float] = None
+        mm_per_pulse = cfg.get("mm_per_pulse")
+        if mm_per_pulse is not None:
+            try:
+                mm_per_pulse_val = float(mm_per_pulse)
+            except (TypeError, ValueError):
+                logging.warning("mm_per_pulse が数値に変換できません: %s", mm_per_pulse)
+
+        mm_to_device_fn = None
+        if callable(mm_per_pulse):
+            mm_to_device_fn = mm_per_pulse  # type: ignore[assignment]
+
+        driver = ChuoDriver(
+            port=port,
+            baudrate=baud,
+            timeout=timeout,
+            write_timeout=write_timeout,
+            mm_per_pulse=mm_per_pulse_val,
+            mm_to_device=mm_to_device_fn,
+            enable_response=enable_response,
+            default_accel=accel,
+        )
+
+        driver_settings = cfg.get("driver_settings", {})
+        if isinstance(driver_settings, Mapping):
+            driver.set_speed_params(
+                rapid_speed=driver_settings.get("rapid_speed"),
+                cut_speed=driver_settings.get("cut_speed"),
+                accel=driver_settings.get("accel"),
+            )
+
+        return driver
 
     def _apply_defaults(self, gcode: GCodeWrapper3D, defaults: dict) -> None:
         if defaults.get("unit", "mm") == "mm":

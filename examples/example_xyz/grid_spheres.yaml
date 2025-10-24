@@ -1,5 +1,14 @@
 # XYZ runner用 3Dグリッド球体パターン設定例
-driver: sim
+driver: chuo
+port: /dev/tty.usbserial-XXXX
+baud: 9600
+mm_per_pulse: 0.0005
+qt_enable_response: true
+
+driver_settings:
+  rapid_speed: 5000
+  cut_speed: 1500
+  accel: 150
 defaults:
   unit: mm
   mode: absolute
