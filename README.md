@@ -28,7 +28,7 @@
 - **3D制御 (xyz_runner)**: G-codeファイル・STEPファイル → 3D CNC制御
 - GUIによる直感的なファイル選択
 - matplotlibによる軌跡シミュレーション（2D/3D）
-- 中央精機XYステージ対応（シリアル通信）
+- 中央精機 QT-BMM2 / OptoSigma GSC-02 ステージ対応（シリアル通信）
 - クロスプラットフォーム自動セットアップ
 
 ## 特徴
@@ -45,7 +45,7 @@
 
 ### 共通機能
 - ✅ クロスプラットフォーム対応（Windows・macOS・Linux）
-- ✅ 実機制御（中央精機XYステージ）
+- ✅ 実機制御（中央精機 QT-BMM2 / OptoSigma GSC-02 ステージ）
 - ✅ プラットフォーム別自動セットアップ
 - ✅ 安全リミット設定
 - ✅ 拡張性の高いドライバ設計
@@ -143,6 +143,14 @@ driver_settings:
   rapid_speed: 5000
   cut_speed: 1500
   accel: 150
+
+# driver: gsc02 を用いる場合の例（XY ランナー）
+driver: gsc02
+port: /dev/tty.usbserial-GSC02
+baud: 9600
+timeout: 1.5
+write_timeout: 1.5
+mm_per_pulse: 0.001
 ```
 
 
@@ -154,6 +162,15 @@ driver_settings:
 - COMポート・ボーレート設定可能
 - 位置フィードバック
 - 安全リミット管理
+```
+
+### OptoSigma GSC-02
+```
+- RS-232C (RTS/CTS) ベースの ASCII プロトコル
+- 既定速度テーブルの設定（Dコマンド）
+- 原点復帰方向の切り替え
+- Busy/Ready 応答による状態監視
+```
 
 ### シミュレーションモード
 - 実機不要
