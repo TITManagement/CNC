@@ -1,63 +1,40 @@
-# CNC XY Runner ドキュメント
+# CNC ドキュメント ハブ
 
-このプロジェクトは、中央精機 XY ステージやシミュレーション環境で SVG パスやパターンを CNC 動作として実行する Python アプリケーションです。
+このディレクトリは「誰が・何をしたいのか」に合わせて必要な情報へ素早くたどり着くための入り口です。
 
-## ドキュメント一覧
+## まず把握したいこと（用途別）
 
-- [ユーザーガイド](user-guide.md)
-  - セットアップ、使い方、設定例
-- [開発者ガイド](developer-guide.md)
-  - コード構成、拡張方法、テスト
-- [README.md](../README.md)
-  - プロジェクト概要、日本語説明
+| 知りたいこと / やりたいこと | 読むべき資料 |
+| --- | --- |
+| 初めてセットアップして実行したい | [ユーザーガイド](user-guide.md) – セットアップ手順とサンプル使用方法 |
+| コード構成や実機ドライバの仕組みを理解したい | [開発者ガイド](developer-guide.md) – モジュール構成と実機ドライバ呼び出しの流れ |
+| プロジェクト全体の紹介がほしい | [README](../README.md) – 機能概要と背景 |
 
-## 主な機能
+## クイックスタート
 
-- SVGファイルやパターンからCNC動作を生成
-- シミュレーション（matplotlib）と実機制御（中央精機）
-- YAMLによる柔軟な設定
-- コマンドラインから簡単操作
-- 拡張可能なドライバ設計
+1. **仮想環境を用意**
+   ```bash
+   python3 -m venv .venv_CNC
+   source .venv_CNC/bin/activate
+   ```
+2. **依存をインストール**
+   ```bash
+   pip install --no-build-isolation -e .
+   ```
+3. **シミュレーション動作確認**
+   ```bash
+   python -m xy_runner.xy_runner --config examples/example_xy/SIM_sample_SVG.yaml
+   ```
+4. **実機接続テスト**（中央精機や GSC-02 を利用する場合）
+   - 設定ファイルの `driver` を `chuo` あるいは `gsc02` に変更し、ポート名・ボーレートなどを記入
+   - 低速モードで安全に動作確認
 
-## 使い方概要 (最短)
-
-1. 仮想環境を作る／有効化
-  ```bash
-  python3 -m venv .venv_CNC
-  source .venv_CNC/bin/activate
-  ```
-2. 依存をインストール（最低限）
-  ```bash
-  pip install --no-build-isolation -e .
-  ```
-3. シミュレーションで素早く動作確認（smoke）
-  ```bash
-  # XY シミュレーション（短距離移動）
-  python - <<'PY'
-  from xy_runner.xy_runner import SimDriver, GCodeWrapper
-  d = SimDriver(); g = GCodeWrapper(d)
-  g.exec('G21 G90'); g.exec('F100'); g.exec('G0 X1 Y1'); g.exec('G1 X2 Y2')
-  print('OK', len(d.tracks))
-  PY
-
-  # XYZ ランナーの起動例
-  python -m xyz_runner.xyz_runner --config examples/example_xyz/grid_spheres.yaml --no-animate
-  ```
-
-4. 実機接続時は `--driver chuo` と設定ファイルで `port`/`baud` を指定して低速でテストしてください。
-
-## 最近の変更（簡潔）
-
-- 一部の `common/` モジュールをバックアップから復元し、`xy_runner` / `xyz_runner` が動作する状態にしました。
-- 未使用と判断した `common/driver.py` と `common/utils.py` は可逆的に `archived/common/` に移動済みです。
-
-上記の操作は master に反映済みで、シミュレーションの smoke テストは現状で動作確認済みです。
-
-## サポート・コントリビュート
-
-- Issue・Pull Request歓迎
-- ドキュメント・コード改善提案も歓迎
+## このプロジェクトでできること
+- SVG / G-code / STEP から CNC 動作を生成
+- matplotlib を使った 2D / 3D シミュレーション表示
+- 中央精機 QT-BMM2 と OptoSigma GSC-02 ステージの制御
+- YAML による柔軟な設定とドライバ拡張
 
 ---
 
-詳細は各ガイドを参照してください。
+目的にあった資料を読むことで、必要な情報へすばやくアクセスできます。分からない点は Issue や Pull Request で遠慮なくご相談ください。

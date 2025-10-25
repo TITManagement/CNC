@@ -1,8 +1,12 @@
+# 中央精機（QT-BMM2）ステージ用設定
 driver: chuo
 port: /dev/tty.usbserial-XXXX
 baud: 9600
+timeout: 1.5
+write_timeout: 1.5
 mm_per_pulse: 0.0005
 qt_enable_response: true
+
 
 driver_settings:
   rapid_speed: 3000
@@ -30,3 +34,5 @@ jobs:
     y_flip: true
     svg_height_mm: 297
     sort_paths: true
+
+# 中央精機ステージ実機でSVG描画を行う例。ポートや速度設定を記入して利用する。

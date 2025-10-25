@@ -1,4 +1,5 @@
 driver: sim
+
 visual:
   show: true
   animate: true
@@ -19,3 +20,4 @@ jobs:
     feed: 1000
     y_flip: false
     sort_paths: true
+# 最小構成でXYランナーを試すためのサンプル設定。SVGファイルだけ指定すれば動作確認できる。

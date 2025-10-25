@@ -1,3 +1,4 @@
+# 実行時にファイル選択ダイアログを開くサンプル
 driver: sim
 visual:
   show: true
@@ -19,3 +20,5 @@ jobs:
     feed: 1000
     y_flip: false
     sort_paths: true
+
+# 実行時にファイル選択ダイアログを表示する設定。手元のSVGを選んで結果を確認する用途向け。

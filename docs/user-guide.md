@@ -61,9 +61,13 @@ driver_settings:
 driver: gsc02
 port: /dev/tty.usbserial-GSC02
 baud: 9600
-timeout: 1.5
-write_timeout: 1.5
 mm_per_pulse: 0.001
+gsc_enable_response: true    # レスポンス読み取りを有効化
+driver_settings:
+  rapid_speed: 3000
+  cut_speed: 1200
+  accel: 100
+
 ```
 
 ## PowerPoint → SVG ワークフロー

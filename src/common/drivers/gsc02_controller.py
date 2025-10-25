@@ -48,6 +48,7 @@ class GSC02:
 
         self._ser: Optional[serial.Serial] = None  # type: ignore[attr-defined]
         self._lock = threading.Lock()
+        self._responses_enabled = True
 
     # ------------------------------------------------------------------#
     # コンテキストマネージャ
@@ -108,12 +109,18 @@ class GSC02:
             self._writeln(line)
             if not expect_reply:
                 return None
+            if not self._responses_enabled:
+                return ""
             try:
                 return self._readline()
             except Exception:
                 if expect_reply:
                     raise
                 return ""
+
+    def set_responses(self, enable: bool) -> None:
+        """レスポンス読み取りの有効／無効を切り替える。"""
+        self._responses_enabled = bool(enable)
 
     # ------------------------------------------------------------------#
     # コマンドラッパ

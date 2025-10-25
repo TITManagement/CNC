@@ -23,6 +23,7 @@ class GSC02Driver(CncDriver):
         mm_per_pulse: float,
         home_dirs: str = "+-",
         controller_kwargs: Optional[Mapping[str, object]] = None,
+        enable_response: bool = True,
     ) -> None:
         """
         Parameters
@@ -44,9 +45,15 @@ class GSC02Driver(CncDriver):
 
         kwargs = dict(controller_kwargs or {})
         self._controller = GSC02(port, **kwargs).open()
+        self._responses_enabled = bool(enable_response)
+        self._controller.set_responses(self._responses_enabled)
         self._mm_per_pulse = float(mm_per_pulse)
         self._home_dirs = home_dirs
         self._positions_pulse: Dict[str, int] = {"x": 0, "y": 0}
+        self._default_accel = 100
+        self._rapid_speed_mm: Optional[float] = None
+        self._cut_speed_mm: Optional[float] = None
+        self._current_speed: Optional[int] = None
 
     # ------------------------------------------------------------------#
     # CncDriver interface
@@ -80,6 +87,8 @@ class GSC02Driver(CncDriver):
         if not deltas:
             return
 
+        self._apply_speed(feed, rapid)
+
         if "x" in deltas and "y" in deltas:
             dirs = "".join("+" if deltas[a] >= 0 else "-" for a in ("x", "y"))
             self._controller.move_rel("W", dirs, abs(deltas["x"]), abs(deltas["y"]))
@@ -100,13 +109,16 @@ class GSC02Driver(CncDriver):
         cut_speed: Optional[float] = None,
         accel: Optional[int] = None,
     ) -> None:
-        """速度設定は装置固有のため、ここではログのみ出力する。"""
-        LOG.info(
-            "GSC02Driver: set_speed_params rapid=%s cut=%s accel=%s (必要に応じて手動設定してください)",
-            rapid_speed,
-            cut_speed,
-            accel,
-        )
+        if rapid_speed is not None:
+            self._rapid_speed_mm = float(rapid_speed)
+        if cut_speed is not None:
+            self._cut_speed_mm = float(cut_speed)
+        if accel is not None:
+            try:
+                self._default_accel = int(accel)
+            except Exception as exc:
+                raise SystemExit(f"accel には整数を指定してください: {accel!r}") from exc
+        self._current_speed = None
 
     def close(self) -> None:
         """シリアルポートをクローズする。"""
@@ -115,5 +127,38 @@ class GSC02Driver(CncDriver):
     # ------------------------------------------------------------------#
     # Helpers
     # ------------------------------------------------------------------#
+    def _apply_speed(self, feed: Optional[float], rapid: bool) -> None:
+        target_mm: Optional[float] = None
+        if feed is not None:
+            target_mm = float(feed)
+        elif rapid and self._rapid_speed_mm is not None:
+            target_mm = self._rapid_speed_mm
+        elif not rapid and self._cut_speed_mm is not None:
+            target_mm = self._cut_speed_mm
+
+        if target_mm is None:
+            return
+
+        pulses = max(1, self._convert_mm(target_mm))
+        if self._current_speed == pulses:
+            return
+
+        accel = self._default_accel
+        try:
+            self._controller.set_speed(
+                range_id=1,
+                s1=pulses,
+                f1=pulses,
+                r1=accel,
+                s2=pulses,
+                f2=pulses,
+                r2=accel,
+            )
+        except Exception as exc:
+            LOG.warning("GSC02Driver: 速度設定に失敗しました: %s", exc)
+            return
+
+        self._current_speed = pulses
+
     def _convert_mm(self, value_mm: float) -> int:
         return int(round(value_mm / self._mm_per_pulse))

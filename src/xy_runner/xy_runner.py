@@ -25,12 +25,7 @@ sys.path.insert(0, src_str)
 
 import matplotlib.pyplot as plt
 
-from common.drivers import CncDriver, ChuoDriver, GSC02Driver
-
-try:  # Optional dependency: pyserial is only required for hardware drivers
-    import serial  # type: ignore
-except Exception:  # pragma: no cover
-    serial = None  # type: ignore
+from common.drivers import CncDriver, create_actual_driver
 from common.gcode import LinearGCodeInterpreter, ModalState2D
 from common.jobs import Job, JobFactory
 from common.platform import EnvironmentAdapter
@@ -483,86 +478,10 @@ class XYRunnerApp:
 
     def _create_driver(self, cfg):
         driver_name = self.args.driver or cfg.get("driver", "sim")
-        mm_per_pulse = cfg.get("mm_per_pulse")
-        mm_per_pulse_val: Optional[float] = None
-        mm_to_device_fn = None
-        if callable(mm_per_pulse):
-            mm_to_device_fn = mm_per_pulse  # type: ignore[assignment]
-        elif mm_per_pulse is not None:
-            try:
-                mm_per_pulse_val = float(mm_per_pulse)
-            except (TypeError, ValueError):
-                logging.warning("mm_per_pulse が数値に変換できません: %s", mm_per_pulse)
         if driver_name == "sim":
             driver = SimDriver()
-        elif driver_name == "chuo":
-            port = cfg.get("port")
-            if not port:
-                raise SystemExit("driver=chuo には port が必要")
-            baud = int(cfg.get("baud", 9600))
-            timeout = float(cfg.get("timeout", 1.0))
-            write_timeout = float(cfg.get("write_timeout", 1.0))
-            accel = int(cfg.get("qt_accel", cfg.get("accel", 100)))
-            enable_response = bool(cfg.get("qt_enable_response", True))
-
-            try:
-                driver = ChuoDriver(
-                    port=port,
-                    baudrate=baud,
-                    timeout=timeout,
-                    write_timeout=write_timeout,
-                    mm_per_pulse=mm_per_pulse_val,
-                    mm_to_device=mm_to_device_fn,
-                    enable_response=enable_response,
-                    default_accel=accel,
-                )
-            except Exception as exc:
-                if serial is not None and isinstance(exc, serial.SerialException):
-                    raise SystemExit(f"ChuoDriver: ポート '{port}' を開けませんでした: {exc}") from exc
-                raise
-            driver_settings = cfg.get("driver_settings", {})
-            if isinstance(driver_settings, Mapping):
-                driver.set_speed_params(
-                    rapid_speed=driver_settings.get("rapid_speed"),
-                    cut_speed=driver_settings.get("cut_speed"),
-                    accel=driver_settings.get("accel"),
-                )
-        elif driver_name == "gsc02":
-            port = cfg.get("port")
-            if not port:
-                raise SystemExit("driver=gsc02 には port が必要")
-            if mm_to_device_fn is not None:
-                raise SystemExit("driver=gsc02 では mm_per_pulse に関数は使用できません")
-            if mm_per_pulse_val is None:
-                raise SystemExit("driver=gsc02 には mm_per_pulse (数値) が必要です")
-
-            controller_kwargs = {}
-            if cfg.get("baudrate") is not None:
-                controller_kwargs["baudrate"] = int(cfg.get("baudrate"))
-            elif cfg.get("baud") is not None:
-                controller_kwargs["baudrate"] = int(cfg.get("baud"))
-            if cfg.get("timeout") is not None:
-                controller_kwargs["timeout"] = float(cfg.get("timeout"))
-            if cfg.get("write_timeout") is not None:
-                controller_kwargs["write_timeout"] = float(cfg.get("write_timeout"))
-            for key in ("rtscts", "encoding", "terminator", "bytesize", "parity", "stopbits"):
-                value = cfg.get(key)
-                if value is not None:
-                    controller_kwargs[key] = value
-            home_dirs = cfg.get("gsc_home_dirs", "+-")
-            try:
-                driver = GSC02Driver(
-                    port=port,
-                    mm_per_pulse=mm_per_pulse_val,
-                    home_dirs=str(home_dirs),
-                    controller_kwargs=controller_kwargs,
-                )
-            except Exception as exc:
-                if serial is not None and isinstance(exc, serial.SerialException):
-                    raise SystemExit(f"GSC02Driver: ポート '{port}' を開けませんでした: {exc}") from exc
-                raise
         else:
-            raise SystemExit(f"未知の driver 設定: {driver_name}")
+            driver, driver_name = create_actual_driver(driver_name, cfg)
         return driver, driver_name
 
     def _apply_defaults(self, gcode: GCodeWrapper, defaults: dict) -> None:
